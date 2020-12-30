@@ -445,7 +445,7 @@ function! <SID>DoxygenLicenseFunc()
   if !exists("g:DoxygenToolkit_authorName")
     let g:DoxygenToolkit_authorName = input("Enter name of the author (generally yours...) : ")
   endif
-  mark d
+  let l:save_pos = getpos(".")[1:2]
   let l:date = strftime("%Y")
   exec "normal O".strpart( s:startCommentBlock, 0, 1 )
   exec "normal A".strpart( s:startCommentBlock, 1 ).substitute( g:DoxygenToolkit_licenseTag, "\<enter>", "\<enter>".s:interCommentBlock, "g" )
@@ -455,7 +455,7 @@ function! <SID>DoxygenLicenseFunc()
   if( g:DoxygenToolkit_licenseTag == s:licenseTag )
     exec "normal %jA".l:date." - ".g:DoxygenToolkit_authorName
   endif
-  exec "normal `d"
+  call cursor(l:save_pos)
 
   call s:RestoreParameters()
 endfunction
@@ -484,7 +484,7 @@ function! <SID>DoxygenAuthorFunc()
   let l:insertionMode = s:StartDocumentationBlock()
   exec "normal ".l:insertionMode.s:interCommentTag.g:DoxygenToolkit_fileTag.l:fileName
   exec "normal o".s:interCommentTag.g:DoxygenToolkit_briefTag_pre
-  mark d
+  let l:save_pos = getpos(".")[1:2]
   exec "normal o".s:interCommentTag.g:DoxygenToolkit_authorTag.g:DoxygenToolkit_authorName
   exec "normal o".s:interCommentTag.g:DoxygenToolkit_versionTag.g:DoxygenToolkit_versionString
   let l:date = strftime("%Y-%m-%d")
@@ -494,7 +494,7 @@ function! <SID>DoxygenAuthorFunc()
   endif
 
   " Move the cursor to the rigth position
-  exec "normal `d"
+  call cursor(l:save_pos)
 
   call s:RestoreParameters()
   startinsert!
@@ -509,7 +509,7 @@ function! <SID>DoxygenUndocumentFunc(blockTag)
   call s:InitializeParameters()
   let l:search = "#ifdef " . a:blockTag
   " Save cursor position and go to the begining of the file
-  mark d
+  let l:save_pos = getpos(".")[1:2]
   exec "normal gg"
 
   while ( search(l:search, 'W') != 0 )
@@ -522,7 +522,7 @@ function! <SID>DoxygenUndocumentFunc(blockTag)
     endif
   endwhile
 
-  exec "normal `d"
+  call cursor(l:save_pos)
   call s:RestoreParameters()
 endfunction
 
@@ -536,11 +536,11 @@ function! <SID>DoxygenBlockFunc()
 
   let l:insertionMode = s:StartDocumentationBlock()
   exec "normal ".l:insertionMode.s:interCommentTag.g:DoxygenToolkit_blockTag
-  mark d
+  let l:save_pos = getpos(".")[1:2]
   exec "normal o".s:interCommentTag."@{ ".s:endCommentTag
   exec "normal o".strpart( s:startCommentTag, 0, 1 )
   exec "normal A".strpart( s:startCommentTag, 1 )." @} ".s:endCommentTag
-  exec "normal `d"
+  call cursor(l:save_pos)
 
   call s:RestoreParameters()
   startinsert!
@@ -588,7 +588,7 @@ function! <SID>DoxygenCommentFunc()
   let l:doc = { "type": "", "name": "None", "params": [], "returns": "" , "templates": [], "throws": [] }
 
   " Mark current line for future use
-  mark d
+  let l:save_pos = getpos(".")[1:2]
 
   " Look for function/method/... to document
   " We look only on the first three lines!
@@ -600,14 +600,14 @@ function! <SID>DoxygenCommentFunc()
   " Error message when the buffer is still empty.
   if( match( l:lineBuffer, l:emptyLinePattern ) != -1 )
     call s:WarnMsg( "Nothing to document here!" )
-    exec "normal `d" 
+    call cursor(l:save_pos) 
     return
   endif
 
   " Remove unwanted lines (ie: jump to the first significant line)
   if( g:DoxygenToolkit_keepEmptyLineAfterComment == "no" )
     " This erase previous mark
-    mark d
+    let l:save_pos = getpos(".")[1:2]
   endif
 
   " Look for the end of the function/class/... to document
@@ -648,7 +648,7 @@ function! <SID>DoxygenCommentFunc()
     else
       call s:WarnMsg( l:readError )
     endif
-    exec "normal `d" 
+    call cursor(l:save_pos) 
     return
   endif
 
@@ -729,11 +729,11 @@ function! <SID>DoxygenCommentFunc()
   endif
 
   " Header
-  exec "normal `d" 
+  call cursor(l:save_pos) 
   if( g:DoxygenToolkit_blockHeader != "" )
     exec "normal O".strpart( s:startCommentBlock, 0, 1 )
     exec "normal A".strpart( s:startCommentBlock, 1 ).g:DoxygenToolkit_blockHeader.s:endCommentBlock
-    exec "normal `d" 
+    call cursor(l:save_pos) 
   endif
  
   " Brief
@@ -752,7 +752,7 @@ function! <SID>DoxygenCommentFunc()
   exec "normal A".g:DoxygenToolkit_briefTag_post
 
   " Mark the line where the cursor will be positionned.
-  mark d
+  let l:save_pos = getpos(".")[1:2]
 
   " Arguments/parameters
   if( g:DoxygenToolkit_compactDoc =~ "yes" )
@@ -816,7 +816,7 @@ function! <SID>DoxygenCommentFunc()
     exec "normal o".strpart( s:startCommentBlock, 0, 1 )
     exec "normal A".strpart( s:startCommentBlock, 1 ).g:DoxygenToolkit_blockFooter.s:endCommentBlock
   endif
-  exec "normal `d"
+  call cursor(l:save_pos)
 
   call s:RestoreParameters()
   if( s:compactOneLineDoc =~ "yes" && s:endCommentTag != "" )
